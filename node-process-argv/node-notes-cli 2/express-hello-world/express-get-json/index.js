@@ -1,4 +1,4 @@
-const express= require('express');
+const express = require('express');
 const app = express();
 
 let list = {
@@ -22,13 +22,21 @@ let list = {
   }
 }
 
-app.get('/api/grades',(req,res)=>{
-  console.log(res)
-      res.status(201).json([list]);
+app.delete('/api/grades/:id', (req, res) => {
+  for (const key in list){
+    if(req.params.id===key){
+      delete list[key]
+      res.status(201).json([list])
+    }
+  }
 
 })
 
+app.get('/api/grades',(req,res)=>{
+  res.status(201).json([list])
+})
 
-app.listen(3000,()=>{
-  console.log('Listening!')
+
+app.listen(3000, () => {
+  console.log('listening to 3000')
 })
