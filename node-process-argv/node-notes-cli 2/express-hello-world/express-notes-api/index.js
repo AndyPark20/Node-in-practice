@@ -74,7 +74,35 @@ app.post('/api/grades',(req,res,next)=>{
   }
 })
 
-
+app.delete('/api/grades/:id',(req,res,next)=>{
+  const number = req.params.id
+  const parsedNumber = parseInt(number,10);
+  if (parsedNumber !== Math.abs(parsedNumber)){
+    res.status(400).json('Please enter positive id')
+  }else{
+    fs.readFile('./data.json','utf8',(error,result)=>{
+      if(error){
+        console.log(error)
+      }else{
+        const parse = JSON.parse(result);
+        const parsedNotes = parse.notes;
+        for(const key in parsedNotes){
+          if(parsedNumber===parseInt(key,10)){
+            delete parsedNotes[parsedNumber]
+            fs.writeFile('./data.json',JSON.stringify(parse,null,2),(err)=>{
+              if(err){
+                console.log(err)
+              }else{
+                return(res.status(204).end());
+              }
+            })
+          }
+        }
+        res.status(404).json(`${parsedNumber} is not found`)
+      }
+    })
+  }
+})
 
 
 
