@@ -29,13 +29,13 @@ app.get('/api/grades', (req, res,next) => {
 
 app.get('/api/grades/:id', (req, res,next) => {
   const number= req.params.id
-  fs.readFile('./data.json', 'utf8', (err, result) => {
+  fs.readFile('./data.json', 'utf8', (err, data) => {
     if (err) {
       console.log(err)
     } else {
-      if (result) {
+      if (data) {
         const array = [];
-        const parsed = JSON.parse(result)
+        const parsed = JSON.parse(data)
         const notesResult = parsed.notes
         for (const key in notesResult) {
           if(number === key){
@@ -52,17 +52,17 @@ app.post('/api/grades',(req,res,next)=>{
   if(!req.body){
     req.status(400).json('Please enter a body of response')
   }else{
-    fs.readFile('./data.json','utf8',(err,result)=>{
+    fs.readFile('./data.json','utf8',(err,data)=>{
       if(err){
         res.status(404).json('Something went wrong')
       }else{
-        let parse= JSON.parse(result);
+        let parse= JSON.parse(data);
         let parseResult = parse.notes;
         let nextNumber = parse.nextId++;
         let info = req.body;
         info['id']= nextNumber;
         parseResult[nextNumber] = info;
-        fs.writeFile('./data.json',JSON.stringify(parse,null,2),(err,result)=>{
+        fs.writeFile('./data.json',JSON.stringify(parse,null,2),(err)=>{
           if(err){
             console.log(err)
           }else{
@@ -91,20 +91,48 @@ app.delete('/api/grades/:id',(req,res,next)=>{
             delete parsedNotes[parsedNumber]
             fs.writeFile('./data.json',JSON.stringify(parse,null,2),(err)=>{
               if(err){
-                console.log(err)
+                return(res.status(500).json('something went wrong!'))
               }else{
                 return(res.status(204).end());
               }
             })
+          }else if(!parsedNotes[parsedNumber]){
+            return(res.status(404).json(`${parsedNumber} not found`))
           }
         }
-        res.status(404).json(`${parsedNumber} is not found`)
       }
     })
   }
 })
 
-
+app.put('/api/grades/:id', (req,res)=>{
+  const number = req.params.id;
+  const update= req.body
+  const parsedNumber = parseInt(number,10);
+  if(parsedNumber !== Math.abs(parsedNumber)){
+    res.status(400).json('please enter positive id number')
+  }else{
+    fs.readFile('./data.json','utf8',(req,data)=>{
+      const parsed = JSON.parse(data);
+      const parsedNotes = parsed.notes;
+      for (const key in parsedNotes){
+        if (parsedNumber === parseInt(key,10)){
+          update['id'] = parsedNumber;
+          parsedNotes[key] = update;
+          fs.writeFile('./data.json',JSON.stringify(parsed,null,2),(err)=>{
+            if(err){
+              return(res.status(500).json('something went wrong!'));
+            }else{
+              return(res.status(200).json(parsedNotes[key]));
+            }
+          })
+        }else if(!parsedNotes[parsedNumber]){
+          return (res.status(404).json(`${number} NOT FOUND!`))
+        }
+      }
+    })
+  }
+})
 
 
 app.listen(3000, () => {
