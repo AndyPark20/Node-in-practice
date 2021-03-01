@@ -7,7 +7,7 @@ const create=(value)=>{
       if(error){
         console.log('readfile',error)
       }else{
-        const parsed = JSON.parse(req);
+        let parsed = JSON.parse(req);
         parsed.notes[parsed.nextId] = value;
         parsed.nextId++;
         fs.writeFile('./data.json', JSON.stringify(parsed,null,2),(err,res)=>{
